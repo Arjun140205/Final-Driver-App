@@ -1,8 +1,9 @@
 package com.examly.springapp.service;
 
 import com.examly.springapp.model.Feedback;
+import com.examly.springapp.dto.FeedbackDTO;
+import com.examly.springapp.mapper.ApiMapper;
 import com.examly.springapp.repository.FeedbackRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,14 +13,19 @@ import java.util.Optional;
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
 
-    @Autowired
-    private FeedbackRepo feedbackRepo;
+    private final FeedbackRepo feedbackRepo;
+    private final AiService aiService;
+    private final ApiMapper mapper;
 
-    @Autowired
-    private AiService aiService;
+    public FeedbackServiceImpl(FeedbackRepo feedbackRepo, AiService aiService, ApiMapper mapper) {
+        this.feedbackRepo = feedbackRepo;
+        this.aiService = aiService;
+        this.mapper = mapper;
+    }
 
     @Override
-    public Feedback createFeedback(Feedback feedback) {
+    public FeedbackDTO createFeedback(FeedbackDTO feedbackDTO) {
+        Feedback feedback = mapper.toEntity(feedbackDTO);
         if (feedback.getDate() == null) {
             feedback.setDate(LocalDate.now());
         }
@@ -29,31 +35,31 @@ public class FeedbackServiceImpl implements FeedbackService {
         } catch (Exception ignored) {
             // keep the feedback without AI attributes
         }
-        return feedbackRepo.save(feedback);
+        return mapper.toDTO(feedbackRepo.save(feedback));
     }
 
     @Override
-    public Feedback getFeedbackById(Long feedbackId) {
-        return feedbackRepo.findById(feedbackId).orElse(null);
+    public FeedbackDTO getFeedbackById(Long feedbackId) {
+        return feedbackRepo.findById(feedbackId).map(mapper::toDTO).orElse(null);
     }
 
     @Override
-    public List<Feedback> getAllFeedbacks() {
-        return feedbackRepo.findAll();
+    public List<FeedbackDTO> getAllFeedbacks() {
+        return mapper.toFeedbackDTOs(feedbackRepo.findAll());
     }
 
     @Override
-    public Feedback deleteFeedback(Long feedbackId) {
+    public FeedbackDTO deleteFeedback(Long feedbackId) {
         Optional<Feedback> feedbackOpt = feedbackRepo.findById(feedbackId);
         if (feedbackOpt.isPresent()) {
             feedbackRepo.delete(feedbackOpt.get());
-            return feedbackOpt.get();
+            return mapper.toDTO(feedbackOpt.get());
         }
         return null;
     }
 
     @Override
-    public List<Feedback> getFeedbacksByUserId(Long userId) {
-        return feedbackRepo.findByUserUserId(userId);
+    public List<FeedbackDTO> getFeedbacksByUserId(Long userId) {
+        return mapper.toFeedbackDTOs(feedbackRepo.findByUserUserId(userId));
     }
 }

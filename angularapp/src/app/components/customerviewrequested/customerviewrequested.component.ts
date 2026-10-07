@@ -81,6 +81,18 @@ export class CustomerviewrequestedComponent implements OnInit, OnDestroy {
     return request.status === 'Trip End' || request.status === 'Closed';
   }
 
+  canWriteReview(request: DriverRequest): boolean {
+    return this.canFetchPayAmount(request);
+  }
+
+  writeReviewFor(request: DriverRequest): void {
+    if (!this.canWriteReview(request)) {
+      return;
+    }
+    const driverId = request.driver?.driverId;
+    this.router.navigate(['/customerpostfeedback'], { queryParams: driverId !== undefined ? { driverId } : {} });
+  }
+
   // ----- details -----
   showMore(request: DriverRequest): void {
     this.selectedRequest = request;

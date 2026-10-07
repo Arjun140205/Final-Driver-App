@@ -3,9 +3,9 @@ package com.examly.springapp.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/** One row per handled exception / error, stored in the "ErrorLogs" table. */
+/** One row per handled exception / error, stored in the error_logs table. */
 @Entity
-@Table(name = "ErrorLogs")
+@Table(name = "error_logs")
 public class ErrorLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

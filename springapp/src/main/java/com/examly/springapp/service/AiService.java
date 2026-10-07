@@ -2,11 +2,12 @@ package com.examly.springapp.service;
 
 import com.examly.springapp.model.Driver;
 import com.examly.springapp.model.Feedback;
+import com.examly.springapp.dto.DriverDTO;
+import com.examly.springapp.mapper.ApiMapper;
 import com.examly.springapp.repository.DriverRepo;
 import com.examly.springapp.repository.FeedbackRepo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,27 +45,32 @@ public class AiService {
         TAG_KEYWORDS.put("vehicle condition", new String[]{"vehicle", "car", "comfortable", "condition", "seat"});
     }
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper jsonMapper;
     private final Map<String, float[]> embeddingCache = new ConcurrentHashMap<>();
 
-    @Autowired
-    private GeminiService geminiService;
+    private final GeminiService geminiService;
+    private final DriverRepo driverRepo;
+    private final FeedbackRepo feedbackRepo;
+    private final ApiMapper apiMapper;
 
-    @Autowired
-    private DriverRepo driverRepo;
-
-    @Autowired
-    private FeedbackRepo feedbackRepo;
+    public AiService(GeminiService geminiService, DriverRepo driverRepo, FeedbackRepo feedbackRepo,
+            ApiMapper apiMapper, ObjectMapper jsonMapper) {
+        this.geminiService = geminiService;
+        this.driverRepo = driverRepo;
+        this.feedbackRepo = feedbackRepo;
+        this.apiMapper = apiMapper;
+        this.jsonMapper = jsonMapper;
+    }
 
     // ------------------------------------------------------------------ semantic driver search
 
-    public List<Driver> searchDrivers(String query) {
+    public List<DriverDTO> searchDrivers(String query) {
         List<Driver> drivers = driverRepo.findAll();
         if (query == null || query.isBlank() || drivers.isEmpty()) {
-            return drivers;
+            return apiMapper.toDriverDTOs(drivers);
         }
         List<Driver> semantic = semanticSearch(query, drivers);
-        return semantic != null ? semantic : keywordSearch(query, drivers);
+        return apiMapper.toDriverDTOs(semantic != null ? semantic : keywordSearch(query, drivers));
     }
 
     /** Embedding + cosine similarity ranking; null when Gemini is unavailable. */
@@ -182,7 +188,7 @@ public class AiService {
             return null;
         }
         try {
-            JsonNode node = mapper.readTree(stripFences(raw));
+            JsonNode node = jsonMapper.readTree(stripFences(raw));
             String sentiment = normalizeSentiment(node.path("sentiment").asText(""));
             if (sentiment == null) {
                 return null;
@@ -287,7 +293,7 @@ public class AiService {
             return false;
         }
         try {
-            JsonNode node = mapper.readTree(stripFences(raw));
+            JsonNode node = jsonMapper.readTree(stripFences(raw));
             String summary = node.path("summary").asText("");
             if (summary.isBlank()) {
                 return false;

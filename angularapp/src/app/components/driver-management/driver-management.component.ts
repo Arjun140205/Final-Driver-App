@@ -160,9 +160,10 @@ export class DriverManagementComponent implements OnInit {
   closeSuccessPopup(): void {
     this.showSuccessPopup = false;
     if (this.isEditMode) {
-      this.router.navigate(['/admin-view-drivers']);
+      void this.router.navigate(['/admin-view-drivers']).catch(() => false);
     } else {
       this.resetForm();
+      void this.router.navigate(['/admin-view-drivers']).catch(() => false);
     }
   }
 

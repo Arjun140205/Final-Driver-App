@@ -27,17 +27,21 @@ public class GeminiService {
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
-    @Value("${gemini.api.key:}")
-    private String apiKey;
-
-    @Value("${gemini.embedding.model:text-embedding-004}")
-    private String embeddingModel;
-
-    @Value("${gemini.generation.model:gemini-2.0-flash}")
-    private String generationModel;
-
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final String apiKey;
+    private final String embeddingModel;
+    private final String generationModel;
+    private final ObjectMapper mapper;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+    public GeminiService(@Value("${gemini.api.key:}") String apiKey,
+            @Value("${gemini.embedding.model:text-embedding-004}") String embeddingModel,
+            @Value("${gemini.generation.model:gemini-2.0-flash}") String generationModel,
+            ObjectMapper mapper) {
+        this.apiKey = apiKey;
+        this.embeddingModel = embeddingModel;
+        this.generationModel = generationModel;
+        this.mapper = mapper;
+    }
 
     public boolean isEnabled() {
         return apiKey != null && !apiKey.trim().isEmpty();

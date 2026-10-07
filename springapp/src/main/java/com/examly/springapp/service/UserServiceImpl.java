@@ -1,8 +1,9 @@
 package com.examly.springapp.service;
 
 import com.examly.springapp.model.User;
+import com.examly.springapp.dto.UserDTO;
+import com.examly.springapp.mapper.ApiMapper;
 import com.examly.springapp.repository.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,20 +12,25 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
+    private final PasswordEncoder encoder;
+    private final ApiMapper mapper;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    public UserServiceImpl(UserRepo userRepo, PasswordEncoder encoder, ApiMapper mapper) {
+        this.userRepo = userRepo;
+        this.encoder = encoder;
+        this.mapper = mapper;
+    }
 
     @Override
-    public User createUser(User user) {
+    public UserDTO createUser(UserDTO userDTO) {
+        User user = mapper.toEntity(userDTO);
         Optional<User> existingUser = userRepo.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
             return null; // Signals duplicate email
         }
         user.setPassword(encoder.encode(user.getPassword()));
-        return userRepo.save(user);
+        return mapper.toDTO(userRepo.save(user));
     }
 
     @Override

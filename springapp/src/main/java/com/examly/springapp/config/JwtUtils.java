@@ -2,6 +2,8 @@ package com.examly.springapp.config;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -9,10 +11,16 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+    private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
 
-    private String jwtSecret = "driveuSecretKeyForJwtAuthenticationOnlyNotForProd";
+    private final String jwtSecret;
+    private final int jwtExpirationMs;
 
-    private int jwtExpirationMs = 86400000;
+    public JwtUtils(@Value("${jwt.secret:driveuSecretKeyForJwtAuthenticationOnlyNotForProd}") String jwtSecret,
+            @Value("${jwt.expiration-ms:86400000}") int jwtExpirationMs) {
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
     public String generateJwtToken(Authentication authentication) {
 
@@ -34,11 +42,8 @@ public class JwtUtils {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException e) {
-        } catch (MalformedJwtException e) {
-        } catch (ExpiredJwtException e) {
-        } catch (UnsupportedJwtException e) {
-        } catch (IllegalArgumentException e) {
+        } catch (JwtException | IllegalArgumentException e) {
+            log.debug("JWT rejected: {}", e.getClass().getSimpleName());
         }
 
         return false;

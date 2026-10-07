@@ -21,6 +21,13 @@ Frontend:
 
 Open http://localhost:8081 (the login page is the first page).
 
+## Latest Sprint — Code Quality & Architecture Refactor
+
+This sprint introduced DTO-based API boundaries, constructor injection, centralized validation and exception handling, AOP/SLF4J logging, persistent error logging, Angular validation and post-trip feedback improvements.
+
+- [Sprint Implementation](./SPRINT_IMPLEMENTATION.md)
+- [Sprint Verification](./SPRINT_VERIFICATION.md)
+
 ---
 
 ## Team File Division (for evaluation)

@@ -1,8 +1,8 @@
 package com.examly.springapp.controller;
 
-import com.examly.springapp.model.Feedback;
+import com.examly.springapp.dto.FeedbackDTO;
 import com.examly.springapp.service.FeedbackService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,22 +13,21 @@ import java.util.List;
 @RequestMapping("/api")
 public class FeedbackController {
 
-    @Autowired
-    private FeedbackService feedbackService;
+    private final FeedbackService feedbackService;
+
+    public FeedbackController(FeedbackService feedbackService) {
+        this.feedbackService = feedbackService;
+    }
 
     @PostMapping("/feedback")
-    public ResponseEntity<Feedback> createFeedback(@RequestBody Feedback feedback) {
-        try {
-            Feedback created = feedbackService.createFeedback(feedback);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    public ResponseEntity<FeedbackDTO> createFeedback(@Valid @RequestBody FeedbackDTO feedback) {
+        FeedbackDTO created = feedbackService.createFeedback(feedback);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/feedback/{feedbackId}")
-    public ResponseEntity<Feedback> viewFeedbackById(@PathVariable Long feedbackId) {
-        Feedback feedback = feedbackService.getFeedbackById(feedbackId);
+    public ResponseEntity<FeedbackDTO> viewFeedbackById(@PathVariable Long feedbackId) {
+        FeedbackDTO feedback = feedbackService.getFeedbackById(feedbackId);
         if (feedback != null) {
             return ResponseEntity.status(HttpStatus.OK).body(feedback);
         }
@@ -36,8 +35,8 @@ public class FeedbackController {
     }
 
     @GetMapping("/feedback")
-    public ResponseEntity<List<Feedback>> viewAllFeedbacks() {
-        List<Feedback> feedbacks = feedbackService.getAllFeedbacks();
+    public ResponseEntity<List<FeedbackDTO>> viewAllFeedbacks() {
+        List<FeedbackDTO> feedbacks = feedbackService.getAllFeedbacks();
         if (feedbacks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
@@ -45,8 +44,8 @@ public class FeedbackController {
     }
 
     @GetMapping("/feedback/user/{userId}")
-    public ResponseEntity<List<Feedback>> viewFeedbacksByUser(@PathVariable Long userId) {
-        List<Feedback> feedbacks = feedbackService.getFeedbacksByUserId(userId);
+    public ResponseEntity<List<FeedbackDTO>> viewFeedbacksByUser(@PathVariable Long userId) {
+        List<FeedbackDTO> feedbacks = feedbackService.getFeedbacksByUserId(userId);
         if (feedbacks == null || feedbacks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -54,8 +53,8 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/feedback/{feedbackId}")
-    public ResponseEntity<Feedback> deleteFeedback(@PathVariable Long feedbackId) {
-        Feedback deleted = feedbackService.deleteFeedback(feedbackId);
+    public ResponseEntity<FeedbackDTO> deleteFeedback(@PathVariable Long feedbackId) {
+        FeedbackDTO deleted = feedbackService.deleteFeedback(feedbackId);
         if (deleted != null) {
             return ResponseEntity.status(HttpStatus.OK).body(deleted);
         }

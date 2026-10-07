@@ -1,9 +1,10 @@
 package com.examly.springapp.service;
 
 import com.examly.springapp.exceptions.DriverRequestDeletionException;
+import com.examly.springapp.dto.DriverRequestDTO;
+import com.examly.springapp.mapper.ApiMapper;
 import com.examly.springapp.model.DriverRequest;
 import com.examly.springapp.repository.DriverRequestRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,29 +14,36 @@ import java.util.Optional;
 @Service
 public class DriverRequestServiceImpl implements DriverRequestService {
 
-    @Autowired
-    private DriverRequestRepo driverRequestRepo;
+    private final DriverRequestRepo driverRequestRepo;
+    private final ApiMapper mapper;
+
+    public DriverRequestServiceImpl(DriverRequestRepo driverRequestRepo, ApiMapper mapper) {
+        this.driverRequestRepo = driverRequestRepo;
+        this.mapper = mapper;
+    }
 
     @Override
-    public DriverRequest addDriverRequest(DriverRequest driverRequest) {
+    public DriverRequestDTO addDriverRequest(DriverRequestDTO requestDTO) {
+        DriverRequest driverRequest = mapper.toEntity(requestDTO);
         if (driverRequest.getRequestDate() == null) {
             driverRequest.setRequestDate(LocalDate.now());
         }
-        return driverRequestRepo.save(driverRequest);
+        return mapper.toDTO(driverRequestRepo.save(driverRequest));
     }
 
     @Override
-    public Optional<DriverRequest> getDriverRequestById(Long driverRequestId) {
-        return driverRequestRepo.findById(driverRequestId);
+    public Optional<DriverRequestDTO> getDriverRequestById(Long driverRequestId) {
+        return driverRequestRepo.findById(driverRequestId).map(mapper::toDTO);
     }
 
     @Override
-    public List<DriverRequest> getAllDriverRequests() {
-        return driverRequestRepo.findAll();
+    public List<DriverRequestDTO> getAllDriverRequests() {
+        return mapper.toDriverRequestDTOs(driverRequestRepo.findAll());
     }
 
     @Override
-    public DriverRequest updateDriverRequest(Long driverRequestId, DriverRequest driverRequest) {
+    public DriverRequestDTO updateDriverRequest(Long driverRequestId, DriverRequestDTO requestDTO) {
+        DriverRequest driverRequest = mapper.toEntity(requestDTO);
         Optional<DriverRequest> existingReqOpt = driverRequestRepo.findById(driverRequestId);
         if (existingReqOpt.isPresent()) {
             DriverRequest existingReq = existingReqOpt.get();
@@ -51,18 +59,18 @@ public class DriverRequestServiceImpl implements DriverRequestService {
             if (driverRequest.getActualDropDate() != null) existingReq.setActualDropDate(driverRequest.getActualDropDate());
             if (driverRequest.getActualDuration() != null) existingReq.setActualDuration(driverRequest.getActualDuration());
             if (driverRequest.getDriver() != null) existingReq.setDriver(driverRequest.getDriver());
-            return driverRequestRepo.save(existingReq);
+            return mapper.toDTO(driverRequestRepo.save(existingReq));
         }
         return null;
     }
 
     @Override
-    public DriverRequest deleteDriverRequest(Long driverRequestId) {
+    public DriverRequestDTO deleteDriverRequest(Long driverRequestId) {
         Optional<DriverRequest> existingReqOpt = driverRequestRepo.findById(driverRequestId);
         if (existingReqOpt.isPresent()) {
             try {
                 driverRequestRepo.delete(existingReqOpt.get());
-                return existingReqOpt.get();
+                return mapper.toDTO(existingReqOpt.get());
             } catch (Exception e) {
                 throw new DriverRequestDeletionException("Failed to delete driver request with ID: " + driverRequestId);
             }
@@ -71,12 +79,12 @@ public class DriverRequestServiceImpl implements DriverRequestService {
     }
 
     @Override
-    public List<DriverRequest> findDriverRequestsByUserId(Long userId) {
-        return driverRequestRepo.findByUserUserId(userId);
+    public List<DriverRequestDTO> findDriverRequestsByUserId(Long userId) {
+        return mapper.toDriverRequestDTOs(driverRequestRepo.findByUserUserId(userId));
     }
 
     @Override
-    public List<DriverRequest> findDriverRequestsByDriverId(Long driverId) {
-        return driverRequestRepo.findByDriverDriverId(driverId);
+    public List<DriverRequestDTO> findDriverRequestsByDriverId(Long driverId) {
+        return mapper.toDriverRequestDTOs(driverRequestRepo.findByDriverDriverId(driverId));
     }
 }

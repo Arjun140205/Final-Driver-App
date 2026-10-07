@@ -1,8 +1,7 @@
 package com.examly.springapp.controller;
 
-import com.examly.springapp.model.Driver;
+import com.examly.springapp.dto.DriverDTO;
 import com.examly.springapp.service.AiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,11 +13,14 @@ import java.util.HashMap;
 @RequestMapping("/api/ai")
 public class AiController {
 
-    @Autowired
-    private AiService aiService;
+    private final AiService aiService;
+
+    public AiController(AiService aiService) {
+        this.aiService = aiService;
+    }
 
     @PostMapping("/driver-search")
-    public ResponseEntity<List<Driver>> searchDrivers(@RequestBody String query) {
+    public ResponseEntity<List<DriverDTO>> searchDrivers(@RequestBody String query) {
         return ResponseEntity.ok(aiService.searchDrivers(query));
     }
 

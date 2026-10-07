@@ -36,6 +36,9 @@
             <span *ngIf="f['password'].errors?.['required']">Password is required</span>
             <span *ngIf="!f['password'].errors?.['required'] && f['password'].errors?.['minlength']">Password must be at least 6 characters long</span>
           </div>
+          <ul class="password-requirements" aria-label="Password requirements">
+            <li [class.requirement-met]="(f['password'].value || '').length >= 6">At least 6 characters</li>
+          </ul>
         </div>
 
         <div class="auth-field">

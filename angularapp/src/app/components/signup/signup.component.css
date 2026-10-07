@@ -1,2 +1,4 @@
 /* Layout of the two-panel auth card is shared with the login page (see styles.css). */
 :host { display: block; }
+.password-requirements { margin: 6px 0 0; padding-left: 20px; color: #737b88; font-size: 0.85rem; }
+.password-requirements .requirement-met { color: #16803c; }
